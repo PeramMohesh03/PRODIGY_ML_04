@@ -1,0 +1,59 @@
+import cv2
+import mediapipe as mp
+import numpy as np
+
+# Initialize MediaPipe Hands
+mp_hands = mp.solutions.hands
+hands = mp_hands.Hands()
+mp_draw = mp.solutions.drawing_utils
+
+# Define a function to extract hand landmarks
+def extract_keypoints(image, hands):
+    image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    results = hands.process(image_rgb)
+
+    if results.multi_hand_landmarks:
+        hand_landmarks = results.multi_hand_landmarks[0]
+        hand_points = []
+        for id, lm in enumerate(hand_landmarks.landmark):
+            height, width, _ = image.shape
+            cx, cy = int(lm.x * width), int(lm.y * height)
+            hand_points.append([cx, cy])
+        return np.array(hand_points)
+    else:
+        return None
+
+# Load your dataset (replace with your dataset path)
+data = []
+labels = []
+
+# ... load images and labels here ...
+
+# Create and train your machine learning model (e.g., SVM, Random Forest)
+# ...
+
+# Real-time gesture recognition
+cap = cv2.VideoCapture(0)  # Access webcam
+while True:
+    success, image = cap.read()
+    if not success:
+        break
+
+    # Preprocess image (resize, grayscale, etc.)
+    # ...
+
+    keypoints = extract_keypoints(image, hands)
+    if keypoints is not None:
+        # Perform gesture recognition using your trained model
+        # ...
+
+        # Display hand landmarks and gesture predictions
+        mp_draw.draw_landmarks(image, hand_landmarks, mp_hands.HAND_CONNECTIONS)
+        # ... display gesture prediction on the image
+
+    cv2.imshow("Hand Gesture Recognition", image)
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
+
+cap.release()
+cv2.destroyAllWindows()
